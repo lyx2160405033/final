@@ -1,0 +1,60 @@
+源代码：
+1、首先对测试图像（文件名为：test1~test6）进行边缘检测，可采用书上介绍的Sobel等模板或者canny算子方法；
+```
+f=imread('test1.bmp');
+f=rgb2gray(f);
+figure;
+subplot(1,2,1);
+imshow(f);
+title('原图像');
+g=edge(f,'sobel',0.04);
+subplot(1,2,2);
+imshow(g);
+title('sobel边界检测');
+```
+```
+f=imread('test1.bmp');
+f=rgb2gray(f);
+figure;
+subplot(1,2,1);
+imshow(f);
+title('原图像');
+g=edge(f,'canny');
+subplot(1,2,2);
+imshow(g);
+title('canny算子');
+```
+2、在边缘检测的基础上，用hough变换检测图中直线；
+3、 比较不同边缘检测算法（2种以上）、不同hough变换参数对直线检测的影响；
+```
+close all;
+clear all;
+I  = imread('test6.jpg');
+
+BW = edge(I,'sobel');%Canny方法提取图像边界，返回二值图像(边界1,否则0)
+figure;
+subplot(1,3,1);
+title('提取图像边界');
+imshow(BW);
+
+[H,T,R] = hough(BW,'RhoResolution',1,'ThetaResolution',1);%计算二值图像的标准霍夫变换，H为霍夫变换矩阵，I,R为计算霍夫变换的角度和半径值
+subplot(1,3,2);
+title('hough变换');
+imshow(H,[],'XData',T,'YData',R,'InitialMagnification','fit');%hough变换的图像
+xlabel('\theta'), ylabel('\rho');
+axis on,axis square,hold on;
+P  = houghpeaks(H,3,'threshold',ceil(1*max(H(:))));%提取3个极值点
+x = T(P(:,2)); 
+y = R(P(:,1));
+plot(x,y,'s','color','white');%标出极值点
+lines=houghlines(BW,T,R,P);%提取线段
+subplot(1,3,3);
+title('直线检测');
+imshow(I), hold on;
+for k = 1:length(lines)
+    xy = [lines(k).point1; lines(k).point2];
+    plot(xy(:,1),xy(:,2),'LineWidth',2,'Color','green');%画出线段
+    plot(xy(1,1),xy(1,2),'x','LineWidth',2,'Color','yellow');%起点
+    plot(xy(2,1),xy(2,2),'x','LineWidth',2,'Color','red');%终点
+end
+```
